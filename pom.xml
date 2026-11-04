@@ -9,7 +9,7 @@
     <properties>
         <kotlin.code.style>official</kotlin.code.style>
         <h2_version>2.5.250</h2_version>
-        <kotlin_version>2.4.20</kotlin_version>
+        <kotlin_version>2.3.0</kotlin_version>
         <logback_version>1.6.3</logback_version>
         <postgresql_version>42.7.13</postgresql_version>
 
