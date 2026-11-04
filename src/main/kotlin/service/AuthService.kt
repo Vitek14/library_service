@@ -9,7 +9,7 @@ import com.example.security.JwtService
 import com.example.security.PasswordHasher
 import io.ktor.http.HttpStatusCode
 
-class AuthException(val status: HttpStatusCode, override val message: String) : RuntimeException(message)
+class AuthException(status: HttpStatusCode, message: String) : ApiException(status, message)
 
 class AuthService(
     private val userRepository: UserRepository,

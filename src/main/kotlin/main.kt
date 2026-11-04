@@ -8,10 +8,15 @@ import com.example.db.repository.GenreRepository
 import com.example.db.repository.RentRequestRepository
 import com.example.db.repository.UserRepository
 import com.example.plugins.configureSecurity
+import com.example.plugins.configureStatusPages
 import com.example.routes.authRoutes
+import com.example.routes.bookRoutes
+import com.example.routes.rentRoutes
 import com.example.security.JwtService
 import com.example.security.PasswordHasher
 import com.example.service.AuthService
+import com.example.service.BookService
+import com.example.service.RentService
 import io.github.cdimascio.dotenv.Dotenv
 import io.github.cdimascio.dotenv.dotenv
 import io.ktor.server.application.Application
@@ -33,6 +38,8 @@ fun Application.module() {
     DatabaseFactory.init(appConfig)
     monitor.subscribe(ApplicationStopped) { DatabaseFactory.close() }
 
+    configureStatusPages()
+
     val jwtService = JwtService(appConfig)
     configureSecurity(jwtService)
 
@@ -45,6 +52,9 @@ fun Application.module() {
     val bookRepository   = BookRepository(authorRepository, genreRepository)
     val rentRequestRepository = RentRequestRepository()
 
+    val bookService = BookService(bookRepository)
+    val rentService = RentService(rentRequestRepository, bookRepository, userRepository)
+
     runBlocking {
         authService.bootstrapAdmin(
             login = appConfig.defaultAdminLogin,
@@ -56,5 +66,7 @@ fun Application.module() {
 
     routing {
         authRoutes(authService)
+        bookRoutes(bookService)
+        rentRoutes(rentService)
     }
 }

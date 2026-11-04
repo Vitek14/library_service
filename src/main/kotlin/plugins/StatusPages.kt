@@ -1,5 +1,6 @@
 package com.example.plugins
 import com.example.model.dto.ErrorResponse
+import com.example.service.ApiException
 import com.example.service.AuthException
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -8,7 +9,7 @@ import io.ktor.server.response.*
 
 fun Application.configureStatusPages() {
     install(StatusPages) {
-        exception<AuthException> { call, cause ->
+        exception<ApiException> { call, cause ->
             call.respond(cause.status, ErrorResponse(cause.message))
         }
         exception<Throwable> { call, cause ->
