@@ -4,7 +4,6 @@ import com.example.db.DatabaseFactory.withTransaction
 import com.example.model.entity.User
 import com.example.model.enums.Role
 import java.sql.ResultSet
-import java.time.Instant
 
 class UserRepository {
 
@@ -58,8 +57,6 @@ class UserRepository {
         }
     }
 
-    // Вспомогательный метод: тот же SELECT, но переиспользует текущее соединение
-    // (нужен для create, чтобы не открывать вторую транзакцию)
     private fun findByIdInConnection(conn: java.sql.Connection, id: Long): User? {
         conn.prepareStatement(SQL_FIND_BY_ID).use { stmt ->
             stmt.setLong(1, id)
