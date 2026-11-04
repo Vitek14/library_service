@@ -1,5 +1,6 @@
 package com.example
 
+import io.ktor.http.ContentType
 import io.ktor.server.application.*
 import io.ktor.server.plugins.openapi.*
 import io.ktor.server.routing.*
