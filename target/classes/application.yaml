@@ -6,5 +6,5 @@ ktor:
       - com.example.HttpKt.configureHttp
       - com.example.SerializationKt.configureSerialization
       - com.example.SecurityKt.configureSecurity
-      - com.example.PostgresKt.configurePostgres
+#      - com.example.PostgresKt.configurePostgres
       - com.example.RoutingKt.configureRouting
