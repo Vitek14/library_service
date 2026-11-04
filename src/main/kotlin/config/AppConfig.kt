@@ -1,6 +1,6 @@
 package com.example.config
 
-import io.ktor.server.config.ApplicationConfig
+import io.ktor.server.config.*
 
 class AppConfig(config: ApplicationConfig) {
     val dbJdbcUrl: String = config.property("database.jdbcUrl").getString()
