@@ -2,6 +2,7 @@ package com.example.views
 
 import com.example.Serializers.auth.AuthResponse
 import com.example.Serializers.auth.RegisterRequest
+import com.example.db.services.registerUser
 import com.example.models.user.Roles
 import com.example.models.user.User
 import com.example.utilities.auth.generateJWT
@@ -27,15 +28,17 @@ fun Route.RegisterView() {
             return@post
         }
 
-        val fakeUser = User(
-            id = 1,
-            name = body.name,
-            surname = body.surname,
-            role = Roles.USER,
-            password = body.password,
-        )
+        // TODO: password hashing and other checks before inserting in db
+        val created_user = registerUser(body.name, body.surname, body.password, Roles.USER)
+//        val fakeUser = User(
+//            id = 1,
+//            name = body.name,
+//            surname = body.surname,
+//            role = Roles.USER,
+//            password = body.password,
+//        )
 
-        val token = generateJWT(fakeUser)
+        val token = generateJWT(created_user)
 
         call.respond(AuthResponse(
             accessToken = token.token,

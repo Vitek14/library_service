@@ -17,6 +17,11 @@ import kotlin.time.Instant
 
 val secret: String? = System.getProperty("JWT_SECRET")
 
+data class IssuedToken(
+    val token: String,
+    val expiresAt: Long,
+)
+
 // setup jwt
 fun Application.configureSecurity() {
     val jwtAudience = "jwt-audience"
@@ -50,11 +55,6 @@ fun Application.configureSecurity() {
         }
     }
 }
-
-data class IssuedToken(
-    val token: String,
-    val expiresAt: Long,
-)
 
 @OptIn(ExperimentalTime::class)
 fun generateJWT(user: User): IssuedToken {
