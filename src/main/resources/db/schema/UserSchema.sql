@@ -1,6 +1,7 @@
 -- File contains how should look users table. It's like migration
 CREATE TABLE IF NOT EXISTS users (
     id         BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    login      VARCHAR(50)  NOT NULL UNIQUE,
     name       VARCHAR(100)  NOT NULL,
     surname    VARCHAR(100)  NOT NULL,
     password   VARCHAR(255)  NOT NULL,

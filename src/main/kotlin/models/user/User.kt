@@ -6,6 +6,7 @@ import kotlin.time.Instant
 
 data class User @OptIn(ExperimentalTime::class) constructor(
     val id: Long,
+    val login: String,
     val name: String,
     val surname: String,
     val password: String,

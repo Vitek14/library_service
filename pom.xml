@@ -122,6 +122,13 @@
             <artifactId>HikariCP</artifactId>
             <version>7.1.0</version>
         </dependency>
+
+        <!-- Argon2 JVM Dependency -->
+        <dependency>
+            <groupId>de.mkammerer</groupId>
+            <artifactId>argon2-jvm</artifactId>
+            <version>2.12</version>
+        </dependency>
     </dependencies>
     <build>
         <sourceDirectory>${project.basedir}/src/main/kotlin</sourceDirectory>

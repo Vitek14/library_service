@@ -41,7 +41,7 @@ private fun runSchema(dataSource: DataSource) {
 
     dataSource.connection.use { conn ->
         conn.createStatement().use { it.execute(sql) }
-        conn.autoCommit = false
+        conn.autoCommit = true
     }
 }
 

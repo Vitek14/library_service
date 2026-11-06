@@ -2,6 +2,7 @@ package com.example
 
 import com.example.model.Priority
 import com.example.model.Task
+import com.example.views.LoginView
 import com.example.views.RegisterView
 import com.example.views.helloView
 import io.ktor.server.application.*
@@ -19,6 +20,8 @@ fun Application.configureRouting() {
         }
 
         RegisterView()
+
+        LoginView()
 //        get("/") {
 //            call.respondText("Hello, World!")
 //        }
