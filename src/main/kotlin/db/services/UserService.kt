@@ -73,6 +73,23 @@ suspend fun getUserByLogin(login: String): User {
     return user ?: throw UserNotFoundException(login)
 }
 
+class UserByIdNotFoundException(val id: Long) : Exception("User with id '$id' not found")
+
+suspend fun getUserById(id: Long): User {
+    val user = dbQuery { conn ->
+        conn.prepareStatement("""
+            SELECT id, login, name, surname, password, role, created_at, updated_at
+            FROM users WHERE id = ?
+        """.trimIndent()).use { ps ->
+            ps.setLong(1, id)
+            ps.executeQuery().use { rs ->
+                if (rs.next()) rs.toUser() else null
+            }
+        }
+    }
+    return user ?: throw UserByIdNotFoundException(id)
+}
+
 @OptIn(ExperimentalTime::class)
 private fun ResultSet.toUser(): User = User(
     id        = getLong("id"),
