@@ -2,9 +2,8 @@ package com.example
 
 import com.example.model.Priority
 import com.example.model.Task
-import com.example.views.LoginView
-import com.example.views.RegisterView
-import com.example.views.helloView
+import com.example.views.auth.LoginView
+import com.example.views.auth.RegisterView
 import io.ktor.server.application.*
 import io.ktor.server.auth.authenticate
 import io.ktor.server.http.content.staticResources
@@ -15,9 +14,9 @@ fun Application.configureRouting() {
     routing {
         staticResources("static", "static")
 
-        authenticate("auth-jwt") {
-            helloView()
-        }
+//        authenticate("auth-jwt") {
+//            helloView()
+//        }
 
         RegisterView()
 
