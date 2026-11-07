@@ -7,6 +7,7 @@ import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationStopped
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.File
 import javax.sql.DataSource
 
 private lateinit var dataSource: HikariDataSource
@@ -34,14 +35,25 @@ private fun createDataSource(): HikariDataSource {
 }
 
 private fun runSchema(dataSource: DataSource) {
-    // read from resources folder schemas and execute it
-    val sql = object {}.javaClass.classLoader
-        .getResource("db/schema/UserSchema.sql")
-        ?.readText()
+    // read all *.sql files from resources/db/schema/* and execute them in order
+    val classLoader = object {}.javaClass.classLoader
+
+    val schemaFiles = listOf("db/schema/users", "db/schema/books")
+        .flatMap { dir ->
+            classLoader.getResource(dir)?.let { url ->
+                File(url.toURI())
+                    .walk()
+                    .filter { it.isFile && it.extension == "sql" }
+                    .sortedBy { it.name }
+                    .toList()
+            } ?: emptyList()
+        }
 
     dataSource.connection.use { conn ->
-        conn.createStatement().use { it.execute(sql) }
         conn.autoCommit = true
+        schemaFiles.forEach { file ->
+            conn.createStatement().use { it.execute(file.readText()) }
+        }
     }
 }
 
