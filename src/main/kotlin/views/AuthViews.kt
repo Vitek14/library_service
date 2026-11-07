@@ -2,6 +2,7 @@ package com.example.views
 
 import com.example.Serializers.auth.AuthResponse
 import com.example.Serializers.auth.RegisterRequest
+import com.example.Serializers.auth.Serializers.auth.AuthException
 import com.example.Serializers.auth.Serializers.auth.LoginRequest
 import com.example.db.services.getUserByLogin
 import com.example.db.services.registerUser
@@ -11,13 +12,13 @@ import com.example.utilities.auth.PasswordHasher.hashPassword
 import com.example.utilities.auth.PasswordHasher.verifyPassword
 import com.example.utilities.auth.generateJWT
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.auth.authenticate
+import io.ktor.openapi.jsonSchema
 import io.ktor.server.request.receive
-import io.ktor.server.request.receiveText
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
+import io.ktor.server.routing.openapi.describe
 import io.ktor.server.routing.post
 import kotlin.time.ExperimentalTime
 
@@ -32,7 +33,6 @@ fun Route.RegisterView() {
             return@post
         }
 
-        // TODO: password hashing and other checks before inserting in db
         val hashedPassword = hashPassword(body.password.toCharArray())
         val created_user = registerUser(body.login, body.name, body.surname, hashedPassword, Roles.USER)
 
@@ -42,6 +42,23 @@ fun Route.RegisterView() {
             accessToken = token.token,
             expiresAt = token.expiresAt
         ))
+    }.describe {
+        summary = "Create a new user"
+        requestBody {
+            schema = jsonSchema<RegisterRequest>()
+            description = "The user creation payload"
+            required = true
+        }
+        responses {
+            HttpStatusCode.OK {
+                description = "User created"
+                schema = jsonSchema<AuthResponse>()
+            }
+            HttpStatusCode.InternalServerError {
+                description = "User creation failed"
+                schema = jsonSchema<AuthException>()
+            }
+        }
     }
 }
 
@@ -67,6 +84,22 @@ fun Route.LoginView() {
             ))
         } else {
             call.respond(HttpStatusCode.BadRequest, "login or password invalid")
+        }
+    }.describe {
+        summary = "Authenticates user"
+        requestBody {
+            schema = jsonSchema<LoginRequest>()
+            description = "User payload"
+            required = true
+        }
+        responses {
+            HttpStatusCode.OK {
+                schema = jsonSchema<AuthResponse>()
+            }
+            HttpStatusCode.InternalServerError {
+                description = "Failed to authenticate"
+                schema = jsonSchema<AuthException>()
+            }
         }
     }
 }
