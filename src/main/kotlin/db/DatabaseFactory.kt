@@ -3,6 +3,7 @@ package com.example.db
 import com.example.db.services.registerUser
 import com.example.models.user.Roles
 import com.example.utilities.auth.PasswordHasher.hashPassword
+import com.example.utilities.envOrProperty
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import java.sql.Connection
@@ -11,6 +12,8 @@ import io.ktor.server.application.ApplicationStopped
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.net.JarURLConnection
+import java.util.jar.JarFile
 import javax.sql.DataSource
 
 private lateinit var dataSource: HikariDataSource
@@ -32,9 +35,9 @@ suspend fun Application.configureDB() {
 private fun createDataSource(): HikariDataSource {
     val hikariConfig = HikariConfig().apply {
         driverClassName = "org.postgresql.Driver"
-        jdbcUrl = System.getProperty("JDBC_URL")
-        username = System.getProperty("DB_USER")
-        password = System.getProperty("DB_PASSWORD")
+        jdbcUrl  = envOrProperty("JDBC_URL")
+        username = envOrProperty("DB_USER")
+        password = envOrProperty("DB_PASSWORD")
         maximumPoolSize = 10
         isAutoCommit = false
     }
@@ -42,24 +45,21 @@ private fun createDataSource(): HikariDataSource {
 }
 
 private fun runSchema(dataSource: DataSource) {
-    // read all *.sql files from resources/db/schema/* and execute them in order
     val classLoader = object {}.javaClass.classLoader
 
-    val schemaFiles = listOf("db/schema/users", "db/schema/books", "db/schema/rent", "db/schema/mock")
-        .flatMap { dir ->
-            classLoader.getResource(dir)?.let { url ->
-                File(url.toURI())
-                    .walk()
-                    .filter { it.isFile && it.extension == "sql" }
-                    .sortedBy { it.name }
-                    .toList()
-            } ?: emptyList()
-        }
+    val orderedDirs = listOf(
+        "db/schema/users",
+        "db/schema/books",
+        "db/schema/rent",
+        "db/schema/mock",
+    )
+
+    val scripts = orderedDirs.flatMap { dir -> readSqlScripts(classLoader, dir) }
 
     dataSource.connection.use { conn ->
         conn.autoCommit = true
-        schemaFiles.forEach { file ->
-            conn.createStatement().use { it.execute(file.readText()) }
+        scripts.forEach { (path, sql) ->
+            conn.createStatement().use { it.execute(sql) }
         }
     }
 }
@@ -93,4 +93,35 @@ suspend fun <T> dbQuery(block: (Connection) -> T): T = withContext(Dispatchers.I
             throw t
         }
     }
+}
+
+private fun readSqlScripts(classLoader: ClassLoader, dir: String): List<Pair<String, String>> {
+    val url = classLoader.getResource(dir) ?: return emptyList()
+
+    return when (url.protocol) {
+        "file" -> {
+            File(url.toURI()).walk()
+                .filter { it.isFile && it.extension == "sql" }
+                .sortedBy { it.name }
+                .map { file -> "$dir/${file.name}" to file.readText() }
+                .toList()
+        }
+        "jar" -> {
+            val jarFile = (url.openConnection() as JarURLConnection).jarFile
+            readFromJar(jarFile, dir)
+        }
+        else -> error("Unsupported protocol: ${url.protocol} for $dir")
+    }
+}
+
+private fun readFromJar(jar: JarFile, dir: String): List<Pair<String, String>> {
+    val prefix = if (dir.endsWith("/")) dir else "$dir/"
+    return jar.entries().asSequence()
+        .filter { !it.isDirectory && it.name.startsWith(prefix) && it.name.endsWith(".sql") }
+        .sortedBy { it.name }
+        .map { entry ->
+            val text = jar.getInputStream(entry).bufferedReader(Charsets.UTF_8).use { it.readText() }
+            entry.name to text
+        }
+        .toList()
 }

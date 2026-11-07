@@ -3,6 +3,7 @@ package com.example.utilities.auth
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.example.models.user.User
+import com.example.utilities.envOrProperty
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
 import io.ktor.server.auth.authentication
@@ -15,7 +16,7 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
-val secret: String? = System.getProperty("JWT_SECRET")
+val secret: String? = envOrProperty("JWT_SECRET")
 
 data class IssuedToken(
     val token: String,
